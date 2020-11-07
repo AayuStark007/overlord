@@ -48,7 +48,7 @@ def pushFrames(args):
 
         print("Starting video stream")
         if args.use_pi:
-            vs = VideoStream(usePiCamera=True).start()
+            vs = VideoStream(usePiCamera=True, resolution=(1280, 720)).start()
         else:
             vs = VideoStream(src=0, resolution=(320, 240)).start()
         time.sleep(2.0)
@@ -61,16 +61,14 @@ def pushFrames(args):
                 print("Timed Out sending frame to remote", err)
                 vs.stop()
                 sender.close()
-                print("Waiting for 5s before reconnecting...")
-                time.sleep(5.0)
-                print("Attempt reconnect")
-                pushFrames()
+                return -1
+        return 0
     except:
         print("error: ", sys.exc_info()[0])
-        raise
+        return -1
 
 
-@timeout(5)
+@timeout(30)
 def readAndSend(hostName: str, vs: VideoStream, sender: ImageSender):
     frame = vs.read()
     sender.send_image(hostName, frame)
@@ -91,4 +89,10 @@ if __name__ == "__main__":
     )
     args = ap.parse_args()
 
-    pushFrames(args)
+    while True:
+        err = pushFrames(args)
+        if err == -1:
+            print("Waiting for 5s before reconnecting...")
+            time.sleep(5.0)
+            print("Attempt reconnect")
+
