@@ -16,6 +16,7 @@ import threading
 import datetime
 import imutils
 import time
+import argparse
 
 import cv2
 import numpy as np
@@ -48,8 +49,15 @@ class ReverseProxied(object):
 outFrame = None
 lock = threading.Lock()
 
+ap = argparse.ArgumentParser()
+ap.add_argument(
+    "--use_wsgi", action="store_true", help="use this if running under reverse proxy"
+)
+args = ap.parse_args()
+
 app = Flask(__name__)
-# app.wsgi_app = ReverseProxied(app.wsgi_app, script_name="/overlord")
+if args.use_wsgi:
+    app.wsgi_app = ReverseProxied(app.wsgi_app, script_name="/overlord")
 
 imageHub = imagezmq.ImageHub()
 
