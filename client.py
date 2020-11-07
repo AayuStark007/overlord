@@ -50,9 +50,18 @@ def pushFrames():
 
         print("Begin sending frames")
         while True:
-            readAndSend(rpiName, vs, sender)
+            try:
+                readAndSend(rpiName, vs, sender)
+            except TimeoutError as err:
+                print("Timed Out sending frame to remote", err)
+                vs.stop()
+                sender.close()
+                print("Waiting for 5s before reconnecting...")
+                time.sleep(5.0)
+                print("Attempt reconnect")
+                pushFrames()
     except:
-        print("error:")
+        print("error: ", sys.exc_info()[0])
         raise
 
 
