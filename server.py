@@ -84,10 +84,15 @@ def process_feed():
 def generate():
     global outFrame, lock
 
+    frameCount = 0
     while True:
+        if frameCount % 500 and frameCount >= 500:
+            frameCount = 0
+            print("Hack: process 500 frames")
+
         with lock:
             if outFrame is None:
-                outFrame = get_blank_image()
+                continue  # outFrame = get_blank_image()
 
             (flag, encodedImage) = cv2.imencode(".jpg", outFrame)
 
@@ -98,6 +103,7 @@ def generate():
                 b"--frame\r\n"
                 b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
             )
+            frameCount = frameCount + 1
 
 
 def get_blank_image():
