@@ -7,6 +7,7 @@ import cv2
 import sys
 
 from functools import wraps
+import argparse
 import errno
 import os
 import signal
@@ -35,17 +36,21 @@ def timeout(seconds=10, error_message=os.strerror(errno.ETIME)):
     return decorator
 
 
-def pushFrames():
+def pushFrames(args):
     try:
         print("Attempting to connect to imageHub")
-        sender = imagezmq.ImageSender(connect_to="tcp://127.0.0.1:5555")
+        sender = imagezmq.ImageSender(
+            connect_to="tcp://{}:{}".format(args.ip, args.port)
+        )
         print("Connected to image hub")
 
         rpiName = socket.gethostname()
 
         print("Starting video stream")
-        vs = VideoStream(src=0, resolution=(320, 240)).start()
-        # vs = VideoStream(usePiCamera=True).start()
+        if args.use_pi:
+            vs = VideoStream(usePiCamera=True).start()
+        else:
+            vs = VideoStream(src=0, resolution=(320, 240)).start()
         time.sleep(2.0)
 
         print("Begin sending frames")
@@ -72,4 +77,18 @@ def readAndSend(hostName: str, vs: VideoStream, sender: ImageSender):
 
 
 if __name__ == "__main__":
-    pushFrames()
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--use_pi",
+        action="store_true",
+        help="Whether to use Pi camera or system camera",
+    )
+    ap.add_argument(
+        "-i", "--ip", type=str, required=True, help="ip adddress of remote host"
+    )
+    ap.add_argument(
+        "-p", "--port", type=int, default=5555, help="receiver port of remote host"
+    )
+    args = ap.parse_args()
+
+    pushFrames(args)
