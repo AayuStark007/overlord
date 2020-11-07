@@ -6,4 +6,4 @@ RUN pip install -r requirements.txt
 EXPOSE 5555/tcp
 EXPOSE 9000
 COPY . .
-CMD ["python", "server.py"]
+CMD ["python", "server.py", "--use_wsgi"]
