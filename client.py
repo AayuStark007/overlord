@@ -48,9 +48,11 @@ def pushFrames(args):
 
         print("Starting video stream")
         if args.use_pi:
-            vs = VideoStream(usePiCamera=True, resolution=(1280, 720)).start()
+            vs = VideoStream(
+                usePiCamera=True, resolution=(args.xres, args.yres)
+            ).start()
         else:
-            vs = VideoStream(src=0, resolution=(320, 240)).start()
+            vs = VideoStream(src=0, resolution=(args.xres, args.yres)).start()
         time.sleep(2.0)
 
         print("Begin sending frames")
@@ -87,6 +89,12 @@ if __name__ == "__main__":
     ap.add_argument(
         "-p", "--port", type=int, default=5555, help="receiver port of remote host"
     )
+    ap.add_argument(
+        "-x", "--xres", type=int, default=320, help="resolution x component"
+    )
+    ap.add_argument(
+        "-y", "--yres", type=int, default=240, help="resolution y component"
+    )
     args = ap.parse_args()
 
     while True:
@@ -95,4 +103,3 @@ if __name__ == "__main__":
             print("Waiting for 5s before reconnecting...")
             time.sleep(5.0)
             print("Attempt reconnect")
-
