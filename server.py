@@ -47,6 +47,7 @@ class ReverseProxied(object):
 
 
 outFrame = None
+bufFrame = None
 lock = threading.Lock()
 
 ap = argparse.ArgumentParser()
@@ -90,7 +91,7 @@ def process_feed():
 
 
 def generate():
-    global outFrame, lock
+    global outFrame, bufFrame, lock
 
     frameCount = 0
     while True:
@@ -99,19 +100,22 @@ def generate():
             print("Hack: process 500 frames")
 
         with lock:
-            if outFrame is None:
-                continue  # outFrame = get_blank_image()
+            if outFrame is not None:
+                bufFrame = outFrame.copy()
 
-            (flag, encodedImage) = cv2.imencode(".jpg", outFrame)
+        if bufFrame is None:
+            continue  # outFrame = get_blank_image()
 
-            if not flag:
-                continue
+        (flag, encodedImage) = cv2.imencode(".jpg", bufFrame)
 
-            yield (
-                b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
-            )
-            frameCount = frameCount + 1
+        if not flag:
+            continue
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
+        )
+        frameCount = frameCount + 1
 
 
 def get_blank_image():
