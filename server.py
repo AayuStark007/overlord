@@ -140,4 +140,4 @@ if __name__ == "__main__":
     t.daemon = True
     t.start()
 
-    app.run(host="0.0.0.0", port=9000, debug=True, threaded=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=9000, debug=False, threaded=True, use_reloader=False)
